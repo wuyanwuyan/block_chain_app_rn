@@ -5,7 +5,7 @@
  */
 import 'es6-symbol/implement';
 import React, { Component } from 'react';
-import { Provider ,connect} from 'react-redux';
+import { Provider } from 'react-redux';
 import RootView from "./RootView";
 import configureStore from './configureStore';
 

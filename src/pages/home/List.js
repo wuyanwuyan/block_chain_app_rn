@@ -4,7 +4,6 @@ import cStyles from "../../styles/common";
 import ListEmptyComponent from "../../components/ListEmptyComponent";
 import {trendFormat, unitConvert} from "../../utils/formatUtil";
 import {Base_color, Dark_color, Split_color} from "../../config/constants";
-import ChartPreView from "./components/ChartPreView";
 
 const screenWidth = Dimensions.get('window').width;
 let itemWidth = screenWidth * 0.25;
@@ -78,14 +77,6 @@ export default class List extends React.Component {
                         </View>
                     </View>
                 </TouchableHighlight>
-                {
-                    active ? <ChartPreView
-                        market={market}
-                        coin={this.props.coin}
-                        basedCoin={this.props.basedCoin}
-                        navigation={this.props.navigation}
-                    /> : null
-                }
             </View>
         )
     }

@@ -5,7 +5,6 @@ import ScrollableTabView, {ScrollableTabBar} from "react-native-scrollable-tab-v
 import cStyles from "../../styles/common";
 import LoadingView from "../../components/LoadingView";
 import ScrollContent from "./ScrollContent";
-import CodePush from "react-native-code-push";
 import Modal from "react-native-modal";
 import ProgressBar from "../../components/ProgressBar";
 import {Base_color, Dark_color} from "../../config/constants";
@@ -13,7 +12,6 @@ import ModalDropdown from "react-native-modal-dropdown";
 import store from "react-native-simple-store";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import {fetchGet} from "../../utils/fetchUtil";
-import {checkUpdate} from "../../utils/checkUpdateUtil";
 import DeviceInfo from "react-native-device-info";
 
 class Home extends React.Component {
@@ -57,15 +55,6 @@ class Home extends React.Component {
 
     componentDidMount() {
         InteractionManager.runAfterInteractions(() => {
-
-            if (Platform.OS !== 'ios') { // 只对安卓热更新 react-native-code-push
-                this.codePushUpdate();
-                // 安卓正式版检测更新
-                if(!__DEV__ && DeviceInfo.getBundleId().indexOf('releaseStaging') === -1){
-                    checkUpdate();
-                }
-            }
-
             let basedCoin = 'USD';
             Promise.all([store.get('basedCoin'), store.get('lastSelectCoin')]).then(([data, data2]) => {
                 basedCoin = data || 'USD';
@@ -119,52 +108,6 @@ class Home extends React.Component {
         this.tabView.goToPage(initialPage);
     }
 
-    // #issue https://github.com/skv-headless/react-native-scrollable-tab-view/issues/126
-    codePushUpdate = () => {
-        // CodePush.checkForUpdate()
-
-        // 先行版本
-        if (DeviceInfo.getBundleId().indexOf('releaseStaging') !== -1) {
-            CodePush.sync({
-                installMode: CodePush.InstallMode.IMMEDIATE,
-                mandatoryInstallMode: CodePush.InstallMode.ON_NEXT_RESUME,
-                updateDialog: {
-                    title: '更新提示',
-                    optionalIgnoreButtonLabel: '稍后',
-                    optionalInstallButtonLabel: '立即更新',
-                    optionalUpdateMessage: 'App有新版本了，是否更新？',
-                    mandatoryContinueButtonLabel: '确定',
-                    mandatoryUpdateMessage: 'App有新版本了，立即更新。',
-                },
-            }, (status) => {
-                switch (status) {
-                    case CodePush.SyncStatus.DOWNLOADING_PACKAGE:  // 下载中
-                        this.setState({modalOpen: true, showDownloading: true, showInstalling: false});
-                        break;
-                    case CodePush.SyncStatus.INSTALLING_UPDATE: // 安装中
-                        this.setState({showDownloading: false, showInstalling: true});
-                        break;
-                    case CodePush.SyncStatus.UPDATE_INSTALLED: //安装成功
-                        this.setState({modalOpen: false, showDownloading: false, showInstalling: false});
-                        break;
-                    case CodePush.SyncStatus.UNKNOWN_ERROR:
-                        this.setState({modalOpen: false});
-                        break;
-                    default:
-                        break;
-                }
-            }, ({receivedBytes, totalBytes}) => {
-                this.setState({downloadProgress: receivedBytes / totalBytes * 100});
-            });
-        } else {
-            // 正式版本
-            CodePush.sync({
-                installMode: CodePush.InstallMode.ON_NEXT_RESTART,
-                mandatoryInstallMode: CodePush.InstallMode.ON_NEXT_RESTART,
-            });
-        }
-    };
-
     _onChangeTab = ({i, ref, from}) => {
         this.lastSelectCoin = ref.props.coin;
         store.update('lastSelectCoin', ref.props.coin);
@@ -191,12 +134,6 @@ class Home extends React.Component {
 
         return (
             <View style={cStyles.flex1}>
-                <Modal isVisible={modalOpen} animationInTiming={100}>
-                    <View style={styles.modalContent}>
-                        <Text style={{textAlign: 'center'}}>{showInstalling ? '安装中' : '下载中'}</Text>
-                        {showInstalling ? null : <ProgressBar width="100%" progress={downloadProgress} color="blue"/>}
-                    </View>
-                </Modal>
                 {
                     coinList.length === 0 ? <LoadingView/> :
                         <ScrollableTabView

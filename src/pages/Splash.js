@@ -35,9 +35,9 @@ export default class Splash extends React.Component {
     }
 
     navigate2Main = () => {
-        // const {navigate} = this.props.navigation;
-        // navigate('Home', {parrrr: '1111133', url: '11111'});
-        NavigationUtil.reset(this.props.navigation, 'Home');
+        const {navigate} = this.props.navigation;
+        navigate('Home');
+        // NavigationUtil.reset(this.props.navigation, 'Home');
     }
 
     render() {
